@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Tableau de bord du formulaire de classe</title>
+<meta name="theme-color" content="#2F5DFF">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Poppins:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2EADB; --card: #FBF6EC; --ink: #17141C; --ink-soft: #4E4757; --line: #17141C;
+    --sky: #2F5DFF; --red: #E2382A; --laterite: #A93E26; --hi: #F7E436; --hi-ink: #17141C;
+    --cream-fixed: #FBF6EC; --track: rgba(23, 20, 28, .12);
+    --tear: polygon(0 0, 100% 0, 100% 86%, 96% 91%, 91% 85%, 86% 92%, 80% 87%, 74% 94%, 69% 88%, 63% 93%, 57% 86%, 51% 92%, 45% 87%, 39% 95%, 33% 88%, 27% 93%, 21% 86%, 15% 92%, 9% 87%, 4% 94%, 0 88%);
+    --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
+    --f-body: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --f-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+    --f-mono: "Space Mono", ui-monospace, Menlo, monospace;
+    color-scheme: light; box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #17141C; --card: #221E28; --ink: #F2EADB; --ink-soft: #B9B0A2; --line: #F2EADB;
+      --sky: #4F76FF; --laterite: #F0805F; --track: rgba(242, 234, 219, .14); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #17141C; --card: #221E28; --ink: #F2EADB; --ink-soft: #B9B0A2; --line: #F2EADB;
+    --sky: #4F76FF; --laterite: #F0805F; --track: rgba(242, 234, 219, .14); color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html, body { margin: 0; min-height: 100%; }
+  html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 60px); }
+  body { background: var(--paper); color: var(--ink); font: 400 16px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--paper); z-index: 10; }
+  [v-cloak] { display: none; }
+
+  .shell { max-width: 720px; margin: 0 auto; }
+  .pad { padding: 0 22px; }
+
+  .strip-wrap { position: relative; margin-bottom: 14px; }
+  .strip-wrap::before { content: ""; position: absolute; inset: 0; background: var(--red); clip-path: var(--tear); transform: translate(6px, 9px); }
+  .strip {
+    position: relative; clip-path: var(--tear); background-color: var(--sky);
+    background-image: radial-gradient(rgba(255,255,255,.24) 1.2px, transparent 1.7px); background-size: 9px 9px;
+    padding: 30px 22px 54px;
+  }
+  .kicker { margin: 0 0 10px; color: var(--cream-fixed); font: italic 400 20px/1.2 var(--f-serif); }
+  .title {
+    margin: 0; color: var(--cream-fixed); font: 400 clamp(44px, 13vw, 78px)/.94 var(--f-display);
+    text-transform: uppercase; text-shadow: 3px 3px 0 var(--red); overflow-wrap: anywhere;
+  }
+
+  .meta { margin: 0 0 6px; color: var(--ink-soft); font-size: 15px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 8px; }
+  .link {
+    appearance: none; background: none; border: 0; cursor: pointer; color: var(--ink);
+    font: 500 15px/1 var(--f-body); padding: 10px 0; text-decoration: underline; text-underline-offset: 4px;
+  }
+  .btn {
+    appearance: none; border: 0; border-radius: 3px; cursor: pointer; background: var(--ink); color: var(--paper);
+    font: 600 16px/1.2 var(--f-body); padding: 16px 22px; box-shadow: 5px 5px 0 var(--sky);
+    transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--sky); }
+  .btn:disabled { opacity: .6; cursor: progress; }
+  .btn--wide { width: 100%; }
+  :focus-visible { outline: 3px solid var(--hi); outline-offset: 3px; }
+
+  .banner { margin: 0 0 18px; padding: 10px 12px; border: 2px dashed var(--laterite); color: var(--laterite); font-size: 14px; }
+  .error { margin: 14px 0 0; color: var(--laterite); font-weight: 500; }
+  .field {
+    width: 100%; font: 500 17px/1.4 var(--f-body); color: var(--ink); background: var(--card);
+    border: 2px solid var(--line); border-radius: 3px; padding: 13px 15px;
+  }
+  .field:focus { outline: 3px solid var(--hi); outline-offset: 2px; }
+  .field-label { display: block; margin: 0 0 6px; font-weight: 500; }
+  .help { margin: 8px 0 18px; font-size: 14px; color: var(--ink-soft); }
+
+  /* Onglets */
+  .tabs {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper);
+    display: flex; gap: 22px; padding: 6px 22px 0; border-bottom: 2px solid var(--line); overflow-x: auto;
+  }
+  .tab {
+    appearance: none; background: none; border: 0; cursor: pointer; white-space: nowrap;
+    font: 500 16px/1 var(--f-body); color: var(--ink-soft); padding: 14px 0 12px; border-bottom: 5px solid transparent; margin-bottom: -2px;
+  }
+  .tab[aria-selected="true"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--sky); }
+  .panel { padding: 22px 22px 48px; }
+
+  /* Statistiques */
+  .block { margin: 0 0 34px; }
+  .block h2 { margin: 0 0 2px; font: 400 26px/1.1 var(--f-display); }
+  .block .sub { margin: 0 0 14px; font: italic 400 18px/1.2 var(--f-serif); color: var(--ink-soft); }
+  .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .bar-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 5px; }
+  .bar-label { font-weight: 500; }
+  .bar-num { font: 400 13px/1 var(--f-mono); color: var(--ink-soft); white-space: nowrap; }
+  .bar-num b { color: var(--ink); }
+  .track { height: 12px; background: var(--track); }
+  .fill { height: 100%; background: var(--sky); min-width: 2px; }
+  .bars li.top .fill { box-shadow: 3px 3px 0 var(--red); }
+  .bars li.top .bar-label { font-weight: 600; }
+  .plain { list-style: none; margin: 10px 0 0; padding: 0; }
+  .plain li { padding: 10px 0; border-top: 1px solid var(--track); }
+  .plain li:first-child { border-top: 0; }
+  .who { font-weight: 600; }
+  .who--anon { font-weight: 500; color: var(--ink-soft); font-style: italic; }
+  .tag { display: inline-block; margin-left: 8px; padding: 2px 8px; background: var(--hi); color: var(--hi-ink); font-size: 13px; font-weight: 500; }
+  .tag--soft { background: var(--track); color: var(--ink); }
+  .copy-zone { margin: 0 0 32px; }
+  .copy-zone textarea { min-height: 220px; margin-top: 12px; font: 400 14px/1.5 var(--f-mono); }
+
+  /* Réponses */
+  .filters { display: grid; gap: 12px; margin-bottom: 8px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    appearance: none; cursor: pointer; border: 2px solid var(--line); border-radius: 3px; background: var(--card);
+    color: var(--ink); font: 500 15px/1 var(--f-body); padding: 10px 14px;
+  }
+  .chip[aria-pressed="true"] { background: var(--sky); border-color: var(--sky); color: #FFFFFF; box-shadow: 3px 3px 0 var(--red); }
+  .count-line { margin: 8px 0 4px; font: 400 13px/1 var(--f-mono); color: var(--ink-soft); }
+  .resp { border-top: 2px solid var(--line); padding: 18px 0 8px; }
+  .resp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .resp-head h3 { margin: 0; font: 400 24px/1.1 var(--f-display); }
+  .resp-head h3.anon { color: var(--ink-soft); }
+  .resp-when { font: 400 13px/1.3 var(--f-mono); color: var(--ink-soft); text-align: right; }
+  .resp dl { margin: 0; display: grid; grid-template-columns: minmax(110px, 34%) 1fr; gap: 6px 14px; }
+  .resp dt { font: 400 13px/1.5 var(--f-mono); color: var(--ink-soft); }
+  .resp dd { margin: 0; overflow-wrap: anywhere; }
+  @media (max-width: 420px) {
+    .resp dl { grid-template-columns: 1fr; gap: 0; }
+    .resp dd { margin-bottom: 10px; }
+  }
+  .empty { padding: 28px 0; }
+  .empty p { margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<div id="app" class="shell" v-cloak>
+
+  <!-- Connexion -->
+  <section v-if="!loaded">
+    <div class="strip-wrap">
+      <header class="strip">
+        <p class="kicker">Espace des responsables de classe</p>
+        <h1 class="title">Tableau de bord</h1>
+      </header>
+    </div>
+    <form class="pad" @submit.prevent="login" novalidate>
+      <p v-if="demo" class="banner">Mode démo : aucune URL Apps Script n’est configurée. Tu vas voir des réponses d’exemple, inventées.</p>
+      <template v-else>
+        <label class="field-label" for="key">Code d’accès</label>
+        <input id="key" class="field" type="password" autocomplete="current-password" v-model="key">
+        <p class="help">C’est le code enregistré dans la propriété ADMIN_KEY du script. Partage-le seulement avec l’autre responsable.</p>
+      </template>
+      <button class="btn btn--wide" type="submit" :disabled="loading">{{ loading ? 'Chargement…' : (demo ? 'Voir la démo' : 'Ouvrir le tableau de bord') }}</button>
+      <p v-if="error" class="error" role="alert">{{ error }}</p>
+    </form>
+  </section>
+
+  <!-- Tableau de bord -->
+  <section v-else>
+    <div class="strip-wrap">
+      <header class="strip">
+        <p class="kicker">{{ demo ? 'Tableau de bord, données d’exemple' : 'Tableau de bord des responsables' }}</p>
+        <h1 class="title">{{ total }} réponse{{ total > 1 ? 's' : '' }}</h1>
+      </header>
+    </div>
+    <div class="pad">
+      <p class="meta" v-if="total">Dernière réponse {{ lastWhen }}. {{ named }} avec prénom, {{ volunteers.length }} volontaire{{ volunteers.length > 1 ? 's' : '' }} pour l’équipe.</p>
+      <div class="toolbar">
+        <button class="link" type="button" @click="refresh" :disabled="loading">{{ loading ? 'Actualisation…' : 'Actualiser' }}</button>
+        <a v-if="config.sheetUrl" class="link" :href="config.sheetUrl" target="_blank" rel="noopener">Ouvrir la feuille Google Sheets</a>
+        <button class="link" type="button" @click="logout">Se déconnecter</button>
+      </div>
+      <p v-if="error" class="error" role="alert">{{ error }}</p>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="Sections du tableau de bord">
+      <button v-for="t in tabs" :key="t.id" class="tab" role="tab" type="button"
+              :aria-selected="tab === t.id ? 'true' : 'false'" @click="tab = t.id">{{ t.label }}</button>
+    </nav>
+
+    <div v-if="!total" class="panel empty">
+      <p><strong>Aucune réponse pour l’instant.</strong></p>
+      <p>Partage le lien du formulaire sur le groupe Annonces, puis appuie sur « Actualiser ».</p>
+    </div>
+
+    <!-- Statistiques -->
+    <div v-else-if="tab === 'stats'" class="panel" role="tabpanel">
+      <div class="copy-zone">
+        <button class="btn btn--wide" type="button" @click="copySummary">{{ copyLabel }}</button>
+        <textarea v-if="showSummary" class="field" readonly :value="summary" aria-label="Résumé à copier"></textarea>
+      </div>
+
+      <div v-for="s in stats" :key="s.id" class="block">
+        <h2>{{ s.title }}</h2>
+        <p class="sub">{{ s.answered }} personne{{ s.answered > 1 ? 's ont' : ' a' }} répondu{{ s.multi ? ', plusieurs choix possibles' : '' }}</p>
+        <ul class="bars">
+          <li v-for="(b, i) in s.bars" :key="b.label" :class="{ top: i === 0 && b.n > 0 }">
+            <div class="bar-head">
+              <span class="bar-label">{{ b.label }}</span>
+              <span class="bar-num"><b>{{ b.n }}</b> ({{ b.pct }}&nbsp;%)</span>
+            </div>
+            <div class="track"><div class="fill" :style="{ width: b.pct + '%' }"></div></div>
+          </li>
+        </ul>
+        <template v-if="s.id === 'tech' && techOthers.length">
+          <p class="sub" style="margin-top:16px">Précisions pour « Autre »</p>
+          <ul class="plain"><li v-for="(t, i) in techOthers" :key="i">{{ t }}</li></ul>
+        </template>
+      </div>
+
+      <div class="block">
+        <h2>Matières qui posent problème</h2>
+        <p class="sub">Réponses regroupées quand elles sont écrites de la même façon</p>
+        <ul class="bars">
+          <li v-for="(b, i) in subjects" :key="b.label" :class="{ top: i === 0 }">
+            <div class="bar-head">
+              <span class="bar-label">{{ b.label }}</span>
+              <span class="bar-num"><b>{{ b.n }}</b> ({{ b.pct }}&nbsp;%)</span>
+            </div>
+            <div class="track"><div class="fill" :style="{ width: b.pct + '%' }"></div></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Réponses une par une -->
+    <div v-else-if="tab === 'list'" class="panel" role="tabpanel">
+      <div class="filters">
+        <input class="field" type="search" v-model="query" placeholder="Chercher un prénom ou un mot" aria-label="Chercher dans les réponses">
+        <div class="chips">
+          <button class="chip" type="button" :aria-pressed="onlyNamed ? 'false' : 'true'" @click="onlyNamed = false">Toutes</button>
+          <button class="chip" type="button" :aria-pressed="onlyNamed ? 'true' : 'false'" @click="onlyNamed = true">Avec prénom</button>
+        </div>
+      </div>
+      <p class="count-line">{{ filtered.length }} réponse{{ filtered.length > 1 ? 's' : '' }} affichée{{ filtered.length > 1 ? 's' : '' }}</p>
+      <article v-for="r in filtered" :key="r.num" class="resp">
+        <div class="resp-head">
+          <h3 :class="{ anon: !r.prenom }">{{ r.prenom || 'Anonyme' }}</h3>
+          <span class="resp-when">n° {{ r.num }}<br>{{ when(r.date) }}</span>
+        </div>
+        <dl>
+          <template v-for="f in fields" :key="f.id">
+            <template v-if="r[f.id]">
+              <dt>{{ f.label }}</dt>
+              <dd>{{ r[f.id] }}</dd>
+            </template>
+          </template>
+        </dl>
+      </article>
+      <p v-if="!filtered.length" class="empty">Aucune réponse ne correspond à cette recherche.</p>
+    </div>
+
+    <!-- Équipe et idées -->
+    <div v-else class="panel" role="tabpanel">
+      <div class="block">
+        <h2>Volontaires pour l’équipe</h2>
+        <p class="sub">{{ volunteers.length }} au total, dont {{ volunteersAnon }} sans prénom (impossible à recontacter)</p>
+        <ul class="plain">
+          <li v-for="r in volunteers" :key="r.num">
+            <span :class="r.prenom ? 'who' : 'who who--anon'">{{ r.prenom || 'Anonyme' }}</span>
+            <span class="tag" :class="{ 'tag--soft': !isYes(r.equipe) }">{{ r.equipe }}</span>
+            <div v-if="r.talent" class="meta" style="margin:4px 0 0">Talent : {{ r.talent }}</div>
+          </li>
+        </ul>
+        <p v-if="!volunteers.length" class="meta">Personne pour l’instant.</p>
+      </div>
+
+      <div class="block">
+        <h2>Talents à partager</h2>
+        <ul class="plain">
+          <li v-for="r in talents" :key="r.num">
+            <span :class="r.prenom ? 'who' : 'who who--anon'">{{ r.prenom || 'Anonyme' }}</span> : {{ r.talent }}
+          </li>
+        </ul>
+        <p v-if="!talents.length" class="meta">Aucun talent indiqué pour l’instant.</p>
+      </div>
+
+      <div class="block">
+        <h2>Idées pour la classe</h2>
+        <ul class="plain">
+          <li v-for="r in ideas" :key="r.num">
+            {{ r.idee }}
+            <span class="meta" v-if="r.prenom"> ({{ r.prenom }})</span>
+          </li>
+        </ul>
+        <p v-if="!ideas.length" class="meta">Aucune idée pour l’instant.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+<script>
+  // Réglages : voir config.js
+  const CONFIG = Object.assign({ scriptUrl: "", sheetUrl: "" }, window.FORM_CONFIG || {});
+
+  const nb = (s) => s.replace(/ ([?!:;])/g, "\u202F$1");
+
+  // Mêmes questions et mêmes options que dans index.html
+  const QUESTIONS = [
+    { id: "reussite", multi: true, label: "Une année réussie", title: "Une année réussie, c’est surtout…",
+      options: ["De bons résultats aux examens", "Progresser en tech", "Décrocher un stage ou un premier contrat", "Réaliser des projets concrets", "Construire son réseau"] },
+    { id: "tech", multi: true, label: "Tech qui attire", title: "Ce qui les attire en tech",
+      options: ["Développement web", "Mobile", "IA & data", "Cybersécurité", "Robotique & IoT", "Design UI-UX", "Autre"] },
+    { id: "opportunites", multi: true, label: "Opportunités", title: "Opportunités à partager",
+      options: ["Stages", "Hackathons & concours", "Bourses", "Formations et certifications gratuites", "Missions freelance", "Événements tech"] },
+    { id: "resultats", multi: true, label: "Pour les résultats", title: "Ce qui boosterait les résultats",
+      options: ["Cours et anciens sujets bien rangés", "Rappels des examens et devoirs", "Entraide sur les matières difficiles", "Outils et astuces pour mieux apprendre"] },
+    { id: "groupes", multi: true, label: "Groupes souhaités", title: "Groupes voulus dans la communauté",
+      options: ["Discussion", "Cours & documents", "Entraide", "Projets tech", "Opportunités", "Détente"] },
+    { id: "equipe", multi: false, label: "Rejoindre l’équipe", title: "Envie de rejoindre l’équipe",
+      options: [nb("Carrément !"), "De temps en temps", nb("Pas pour l’instant")] },
+  ];
+  const FIELDS = [
+    { id: "reussite", label: "Une année réussie" }, { id: "tech", label: "Tech qui attire" },
+    { id: "techAutre", label: "Tech (autre)" }, { id: "opportunites", label: "Opportunités" },
+    { id: "resultats", label: "Pour les résultats" }, { id: "matiere", label: "Matière difficile" },
+    { id: "groupes", label: "Groupes souhaités" }, { id: "talent", label: "Talent" },
+    { id: "equipe", label: "Rejoindre l’équipe" }, { id: "idee", label: "Idée" },
+  ];
+  const ANSWER_KEYS = ["reussite", "tech", "techAutre", "opportunites", "resultats", "matiere", "groupes", "talent", "equipe", "idee", "prenom"];
+  const YES = nb("Carrément !");
+  const NOT_NOW = nb("Pas pour l’instant");
+  const KEY_STORE = "tableau-de-bord-cle";
+
+  const norm = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+  const split = (v) => String(v || "").split(", ").map((x) => x.trim()).filter(Boolean);
+  const pct = (n, d) => (d ? Math.round((n / d) * 100) : 0);
+
+  // ---------- Données d'exemple pour le mode démo ----------
+  function demoRows() {
+    let seed = 7;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+    const some = (arr, p) => { const out = arr.filter(() => rnd() < p); return out.length ? out : [pick(arr)]; };
+    const names = ["Aïcha", "Koffi", "Grâce", "Rodrigue", "Mariam", "Sèdjro", "Nadège", "Hervé", "Fatou", "Ulrich"];
+    const subjects = ["Algorithmique", "algorithmique", "Mathématiques", "Bases de données", "Réseaux", "Anglais", "Probabilités", "Programmation en C", "Mathématiques"];
+    const talents = ["Montage vidéo", "Python", "Design sur Figma", "Photographie", "Prise de parole", "Excel avancé"];
+    const ideas = ["Un hackathon interne en fin de semestre", "Des révisions en ligne avant les partiels", "Inviter des anciens qui travaillent dans la tech", "Un projet commun pour nos portfolios", "Un drive bien rangé avec tous les anciens sujets"];
+    const rows = [];
+    const now = Date.now();
+    for (let i = 0; i < 27; i++) {
+      const named = rnd() < 0.4;
+      const equipe = pick([YES, YES, "De temps en temps", NOT_NOW, NOT_NOW, ""]);
+      const tech = some(QUESTIONS[1].options, 0.3);
+      rows.push({
+        date: new Date(now - (27 - i) * 2.6 * 3600 * 1000).toISOString(),
+        reussite: some(QUESTIONS[0].options, 0.4).join(", "),
+        tech: tech.join(", "),
+        techAutre: tech.includes("Autre") ? pick(["Blockchain", "Jeux vidéo", "Cloud"]) : "",
+        opportunites: some(QUESTIONS[2].options, 0.4).join(", "),
+        resultats: some(QUESTIONS[3].options, 0.45).join(", "),
+        matiere: pick(subjects),
+        groupes: rnd() < 0.85 ? some(QUESTIONS[4].options, 0.45).join(", ") : "",
+        talent: rnd() < 0.45 ? pick(talents) : "",
+        equipe,
+        idee: rnd() < 0.5 ? pick(ideas) : "",
+        prenom: named ? pick(names) : "",
+      });
+    }
+    return rows;
+  }
+
+  Vue.createApp({
+    data() {
+      return {
+        config: CONFIG,
+        demo: !CONFIG.scriptUrl,
+        key: "",
+        loaded: false,
+        loading: false,
+        error: "",
+        rows: [],
+        tab: "stats",
+        tabs: [{ id: "stats", label: "Statistiques" }, { id: "list", label: "Réponses" }, { id: "team", label: "Équipe et idées" }],
+        query: "",
+        onlyNamed: false,
+        copyLabel: "Copier le résumé pour WhatsApp",
+        showSummary: false,
+        fields: FIELDS,
+      };
+    },
+    computed: {
+      total() { return this.rows.length; },
+      named() { return this.rows.filter((r) => r.prenom).length; },
+      lastWhen() { return this.total ? this.when(this.rows[this.rows.length - 1].date) : ""; },
+      stats() {
+        return QUESTIONS.map((q) => {
+          const answeredRows = this.rows.filter((r) => String(r[q.id] || "").trim());
+          const answered = answeredRows.length;
+          const bars = q.options
+            .map((opt) => {
+              const n = answeredRows.filter((r) => (q.multi ? split(r[q.id]).includes(opt) : r[q.id] === opt)).length;
+              return { label: opt, n, pct: pct(n, answered) };
+            })
+            .sort((a, b) => b.n - a.n);
+          return { id: q.id, title: q.title, multi: q.multi, answered, bars };
+        });
+      },
+      techOthers() { return this.rows.map((r) => r.techAutre).filter(Boolean); },
+      subjects() {
+        const groups = new Map();
+        this.rows.forEach((r) => {
+          const k = norm(r.matiere);
+          if (!k) return;
+          if (!groups.has(k)) {
+            const label = r.matiere.trim();
+            groups.set(k, { label: label.charAt(0).toUpperCase() + label.slice(1), n: 0 });
+          }
+          groups.get(k).n++;
+        });
+        const answered = [...groups.values()].reduce((a, g) => a + g.n, 0);
+        return [...groups.values()].sort((a, b) => b.n - a.n).slice(0, 12).map((g) => ({ ...g, pct: pct(g.n, answered) }));
+      },
+      numbered() { return this.rows.map((r, i) => ({ ...r, num: i + 1 })).reverse(); },
+      filtered() {
+        const q = norm(this.query);
+        return this.numbered.filter((r) => {
+          if (this.onlyNamed && !r.prenom) return false;
+          if (!q) return true;
+          return norm(ANSWER_KEYS.map((k) => r[k]).join(" ")).includes(q);
+        });
+      },
+      volunteers() {
+        return this.numbered
+          .filter((r) => r.equipe && r.equipe !== NOT_NOW)
+          .sort((a, b) => (this.isYes(b.equipe) - this.isYes(a.equipe)) || (!!b.prenom - !!a.prenom));
+      },
+      volunteersAnon() { return this.volunteers.filter((r) => !r.prenom).length; },
+      talents() { return this.numbered.filter((r) => r.talent); },
+      ideas() { return this.numbered.filter((r) => r.idee); },
+      summary() {
+        const top = (id, k = 3) => {
+          const s = this.stats.find((x) => x.id === id);
+          return s.bars.filter((b) => b.n).slice(0, k).map((b) => `${b.label} (${b.pct}\u00A0%)`).join(", ");
+        };
+        const subj = this.subjects.slice(0, 3).map((s) => s.label).join(", ");
+        const yes = this.volunteers.length;
+        return [
+          `📊 *Résultats du formulaire de classe* (${this.total} réponse${this.total > 1 ? "s" : ""})`,
+          "",
+          `🎯 *Une année réussie, c’est surtout :* ${top("reussite")}`,
+          `💻 *En tech, ce qui vous attire :* ${top("tech")}`,
+          `🚀 *Les opportunités que vous voulez :* ${top("opportunites")}`,
+          `📚 *Pour booster les résultats :* ${top("resultats", 2)}`,
+          subj ? `😅 *Les matières qui posent le plus problème :* ${subj}` : null,
+          `👥 *Groupes les plus demandés :* ${top("groupes")}`,
+          yes ? `🙋 *${yes} personne${yes > 1 ? "s sont partantes" : " est partante"} pour aider l’équipe*, merci\u00A0!` : null,
+          "",
+          "Merci à tous pour vos réponses. On revient très vite avec les premières actions\u00A0💪",
+          "Vos deux responsables de classe",
+        ].filter((l) => l !== null).map(nb).join("\n");
+      },
+    },
+    created() {
+      try { this.key = sessionStorage.getItem(KEY_STORE) || ""; } catch (e) { /* indisponible */ }
+      if (!this.demo && this.key) this.login();
+    },
+    methods: {
+      isYes(v) { return v === YES; },
+      when(iso) {
+        const d = new Date(iso);
+        if (isNaN(d)) return "";
+        return d.toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+      },
+      clean(rows) {
+        // Ignore les lignes entièrement vides
+        return rows.filter((r) => ANSWER_KEYS.some((k) => String(r[k] || "").trim()));
+      },
+      async fetchRows() {
+        if (this.demo) {
+          await new Promise((r) => setTimeout(r, 300));
+          return demoRows();
+        }
+        let data;
+        try {
+          const res = await fetch(CONFIG.scriptUrl, { method: "POST", body: JSON.stringify({ action: "read", key: this.key }) });
+          data = await res.json();
+        } catch (e) {
+          throw new Error("Connexion impossible au script. Vérifie l’URL dans config.js et ta connexion internet.");
+        }
+        if (!data.ok) {
+          if (data.error === "Code incorrect") throw new Error("Code incorrect.");
+          if (String(data.error).includes("ADMIN_KEY")) throw new Error("Ajoute la propriété ADMIN_KEY dans les propriétés du script, puis publie une nouvelle version du déploiement.");
+          throw new Error("Le script a refusé la demande.");
+        }
+        if (!Array.isArray(data.rows)) {
+          throw new Error("Le script en ligne est encore l’ancienne version. Dans Apps Script : Déployer > Gérer les déploiements > crayon > Nouvelle version.");
+        }
+        return data.rows;
+      },
+      async login() {
+        if (!this.demo && !this.key.trim()) { this.error = "Entre le code d’accès."; return; }
+        this.loading = true; this.error = "";
+        try {
+          this.rows = this.clean(await this.fetchRows());
+          this.loaded = true;
+          if (!this.demo) { try { sessionStorage.setItem(KEY_STORE, this.key); } catch (e) { /* indisponible */ } }
+        } catch (e) {
+          this.error = e.message;
+          if (e.message === "Code incorrect.") { try { sessionStorage.removeItem(KEY_STORE); } catch (x) { /* rien */ } }
+        } finally {
+          this.loading = false;
+        }
+      },
+      async refresh() {
+        this.loading = true; this.error = "";
+        try { this.rows = this.clean(await this.fetchRows()); }
+        catch (e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      logout() {
+        try { sessionStorage.removeItem(KEY_STORE); } catch (e) { /* rien */ }
+        this.key = ""; this.rows = []; this.loaded = false; this.error = ""; this.showSummary = false;
+      },
+      async copySummary() {
+        try {
+          await navigator.clipboard.writeText(this.summary);
+          this.copyLabel = "Résumé copié, colle-le sur WhatsApp";
+          setTimeout(() => { this.copyLabel = "Copier le résumé pour WhatsApp"; }, 3000);
+        } catch (e) {
+          // Copie automatique impossible : on affiche le texte à copier à la main
+          this.showSummary = true;
+        }
+      },
+    },
+  }).mount("#app");
+</script>
+</body>
+</html>
