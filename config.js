@@ -13,5 +13,5 @@ window.FORM_CONFIG = {
 
   // Facultatif : lien de ta feuille Google Sheets,
   // pour l'ouvrir en un clic depuis le tableau de bord.
-  sheetUrl: "https://script.google.com/macros/s/AKfycbzjHBV3Z8hS4vEDUjkXJ6ihxhJELPoUEFPWPclon0yYo70gsJV3InpHVviSUkLtG2Cc/exec",
+  sheetUrl: "",
 };
